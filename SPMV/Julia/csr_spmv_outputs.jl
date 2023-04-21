@@ -974,357 +974,500 @@ function spmv(A::SparseMatrixCSC{Tv,Ti}, x::Vector{Tv}) where {Tv<:AbstractFloat
 
 ### End of Output
 
-# Prompt: CSR SPMV KernelAbstractions
+# Prompt: CSR SPMV KernelsAbstractions
 ### Beginning of Output
 
-Synthesizing 9/10 solutions
+Synthesizing 8/10 solutions
 
 =======
 
-# CSR SPMV KernelAbstractions implementation
-function spmv(A::SparseMatrixCSC{Tv,Ti}, x::Vector{Tv}, y::Vector{Tv}) where {Tv,Ti}
-    # Get the number of rows and columns of the matrix
-    m, n = size(A)
-    # Get the column pointer
-    colptr = A.colptr
-    # Get the row indices
-    rowval = A.rowval
-    # Get the non-zero values
-    nzval = A.nzval
-    # Get the number of non-zeros
-    nnz = length(nzval)
-    # Create a kernel
-    kernel = @kernel function spmv_kernel!(A, x, y)
-        # Get the global thread index
-        i = @index(Global, Linear)
-        # Check if the thread index is less than the number of rows
-        if i <= m
-            # Initialize the value of the dot product to zero
-            dot = zero(Tv)
-            # Loop over the non-zero values in the row
-            for k in colptr[i]:(colptr[i + 1] - 1)
-                # Add the product of the non-zero value and the corresponding value in the vector to the dot product
-                dot += nzval[k] * x[rowval[k]]
-            end
-            # Set the value of the dot product to the corresponding value in the output vector
-            y[i] = dot
-        end
-        return nothing
-    end
-    # Create an event
-    event = kernel!(CUDADevice(), (m, ), nothing, A, x, y)
-    # Wait for the kernel to finish
-    wait(event)
-    return nothing
-end
-
-# Path: SPMV/CoPilotOutput/spmv.jl
-# CSR SPMV KernelAbstractions implementation
-function spmv(A::SparseMatrixCSC{Tv,Ti}, x::Vector{Tv}, y::Vector{Tv}) where {Tv,Ti}
-    # Get the number of rows and columns of the matrix
-    m, n = size(A)
-    # Get the number of non-zeros
-    nnz = length(A.nzval)
-    # Create a kernel
-    kernel = @kernel function spmv_kernel!(A, x, y)
-        # Get the global thread index
-        i = @index(Global, Linear)
-        # Check if the thread index is less than the number
-
-=======
-
-# CSR SPMV KernelAbstractions Kernel
-# Generated using KernelAbstractions.jl
-# KernelAbstractions.jl Version: 0.5.5
-# Julia Version: 1.5.3
-# Time Generated: 2020-11-13T03:40:52.568
-# KernelAbstractions.jl commit: 3c3c3b3
-# KernelAbstractions.jl commit date: 2020-11-12
-# GPU: NVIDIA GeForce GTX 1080 Ti
-# CUDA driver version: 11.1
-# CUDA toolkit version: 11.0.221
-# Kernel: spmv
-# Kernel file: /home/alex/.julia/packages/KernelAbstractions/4J4Pb/src/../examples/CoPilotOutput/spmv.jl
-# Kernel function: spmv
-# Kernel source:
-# function spmv(A, x, y)
-#     i = @index(Global, Linear)
-#     if i <= A.n
-#         y[i] = zero(eltype(y))
-#         for k in A.colptr[i]:(A.colptr[i + 1] - 1)
-#             y[i] += A.nzval[k] * x[A.rowval[k]]
-#         end
-#     end
-#     return nothing
-# end
-# Kernel device: GPU
-# Kernel workgroup size: (256,)
-# Kernel workgroup size (max): (1024,)
-# Kernel workgroup size (min): (1,)
-# Kernel workgroup size (preferred multiple): (32,)
-# Kernel workgroup size (granularity): (1,)
-# Kernel workgroup count: (256,)
-# Kernel workgroup count (max): (2147483647,)
-# Kernel workgroup count (min): (1,)
-# Kernel workgroup count (granularity): (1,)
-# Kernel workgroup count (max per dimension): (2147483647, 65535, 65535)
-# Kernel workgroup count (min per dimension): (1, 1, 1)
-# Kernel workgroup count (granularity per dimension): (1, 1, 1)
-# Kernel workgroup count (max per dimension): (2147483647, 65535, 65535)
-# Kernel workgroup count (min per dimension): (1, 1, 1)
-# Kernel workgroup count (granularity per dimension): (1,
-
-=======
-
-# CSR SPMV KernelAbstractions CoPilot Output
-# Generated: Fri Mar 19 10:49:53 2021
-# Kernel: spmv
-# KernelAbstractions Version: 0.5.1
-# CoPilot Version: 0.2.2
-# Type: KernelAbstractions.CUDAKernel
-# KernelAbstractions Kernel: spmv
-# Threads: (256, 1, 1)
-# Blocks: (1, 1, 1)
-# Grid: (256, 1, 1)
-# Workgroup: (256, 1, 1)
-# Workgroup size: 256
-# Launch configuration: (256, 1, 1)
-# Kernel: spmv
-# KernelAbstractions Version: 0.5.1
-# CoPilot Version: 0.2.2
-# Type: KernelAbstractions.CUDAKernel
-# KernelAbstractions Kernel: spmv
-# Threads: (256, 1, 1)
-# Blocks: (1, 1, 1)
-# Grid: (256, 1, 1)
-# Workgroup: (256, 1, 1)
-# Workgroup size: 256
-# Launch configuration: (256, 1, 1)
-# Kernel: spmv
-# KernelAbstractions Version: 0.5.1
-# CoPilot Version: 0.2.2
-# Type: KernelAbstractions.CUDAKernel
-# KernelAbstractions Kernel: spmv
-# Threads: (256, 1, 1)
-# Blocks: (1, 1, 1)
-# Grid: (256, 1, 1)
-# Workgroup: (256, 1, 1)
-# Workgroup size: 256
-# Launch configuration: (256, 1, 1)
-# Kernel: spmv
-# KernelAbstractions Version: 0.5.1
-# CoPilot Version: 0.2.2
-# Type: KernelAbstractions.CUDAKernel
-# KernelAbstractions Kernel: spmv
-# Threads: (256, 1, 1)
-# Blocks: (1, 1, 1)
-# Grid: (256, 1, 1)
-# Workgroup: (256, 1, 1)
-# Workgroup size: 256
-# Launch configuration
-
-=======
-
-# CSR SPMV KernelAbstractions Kernel
-# Size: 1000000
-# Format: CSR
-# Type: Float64
-# Device: CPU
-# Threads: 1
-# Kernel: spmv_csr_kernel
-# Kernel properties: 
-#   - workgroup size: 1
-#   - workgroup count: 1000000
-#   - ndrange: 1000000
-#   - ndrange offset: 0
-#   - ndrange stride: 1
-#   - ndrange start: 1
-#   - ndrange stop: 1000001
-#   - ndrange length: 1000000
-#   - ndrange step: 1
-#   - ndrange remainder: 0
-#   - ndrange remainder start: 1000001
-#   - ndrange remainder stop: 1000001
-#   - ndrange remainder length: 0
-#   - ndrange remainder step: 1
-#   - ndrange remainder stride: 1
-#   - ndrange remainder offset: 0
-#   - ndrange remainder size: 0
-#   - ndrange remainder count: 0
-#   - ndrange remainder start: 1000001
-#   - ndrange remainder stop: 1000001
-#   - ndrange remainder length: 0
-#   - ndrange remainder step: 1
-#   - ndrange remainder stride: 1
-#   - ndrange remainder offset: 0
-#   - ndrange remainder size: 0
-#   - ndrange remainder count: 0
-#   - ndrange remainder start: 1000001
-#   - ndrange remainder stop: 1000001
-#   - ndrange remainder length: 0
-#   - ndrange remainder step: 1
-#   - ndrange remainder stride: 1
-#   - ndrange remainder offset: 0
-#   - ndrange remainder size: 0
-#   - ndrange remainder count: 0
-#   - ndrange remainder start: 1000001
-#   - ndrange remainder stop: 1000001
-#   - ndrange remainder length: 0
-#   - ndrange remainder step: 1
-#   - ndrange remainder stride: 1
-#   - ndrange remainder offset: 0
-#
-
-=======
-
-# CSR SPMV KernelAbstractions CoPilot output
-# Generated on 2020-10-26T18:52:43.001
-# KernelAbstractions version: 0.5.7
-# CoPilot version: 0.2.8
-# Device: AMD Radeon Pro 560X Compute Engine
-# Device properties:
-#   max_threads_per_block: 1024
-#   max_threads_per_dimension: 1024
-#   max_grid_size: 2147483647
-#   warp_size: 64
-#   max_shmem_per_block: 49152
-#   max_shmem_per_block_optin: 49152
-#   max_shmem_per_multiprocessor: 65536
-#   max_shmem_per_multiprocessor_optin: 65536
-#   max_registers_per_block: 65536
-#   max_registers_per_multiprocessor: 65536
-#   max_shared_memory_per_multiprocessor: 98304
-#   max_shared_memory_per_multiprocessor_optin: 98304
-#   max_shared_memory_per_block: 49152
-#   max_shared_memory_per_block_optin: 49152
-#   max_threads_per_multiprocessor: 2048
-#   max_threads_per_warp: 64
-#   max_warps_per_multiprocessor: 32
-#   max_warps_per_block: 16
-#   max_blocks_per_multiprocessor: 32
-#   max_blocks_per_dimension: 2147483647
-#   max_grid_size_x: 2147483647
-#   max_grid_size_y: 2147483647
-#   max_grid_size_z: 2147483647
-#   max_pitch: 2147483647
-#   max_texture_1d_width: 131072
-#   max_texture_2d_width: 131072
-#   max_texture_2d_height: 65536
-#   max_texture_3d_width: 16384
-#   max_texture_3d_height: 16384
-#   max_texture_3d_depth: 16384
-#   max_texture_1d_layered_width: 32768
-#   max_texture_1d_layered_layers: 2048
-#   max_texture_2d_layered_width: 32768
-#   max_texture_2d_layered_height
-
-=======
-
-# CSR SPMV KernelAbstractions Kernel
-# 2020-08-31T13:15:58.000
-# Julia Version 1.5.0-DEV.831
-# Commit 6f2b6b8c6e* (2020-08-31 19:15 UTC)
-# Platform Info:
-#   OS: Linux (x86_64-pc-linux-gnu)
-#   CPU: Intel(R) Xeon(R) CPU E5-2680 v4 @ 2.40GHz
-#   WORD_SIZE: 64
-#   LIBM: libopenlibm
-#   LLVM: libLLVM-9.0.1 (ORCJIT, skylake)
-# Environment:
-#   JULIA_NUM_THREADS = 1
-#   JULIA_CUDA_USE_BINARYBUILDER = false
-#   JULIA_CUDA_USE_CUDNN = false
-#   JULIA_CUDA_USE_CUBLAS = false
-#   JULIA_CUDA_USE_CUSOLVER = false
-#   JULIA_CUDA_USE_CUFFT = false
-#   JULIA_CUDA_USE_CUSPARSE = false
-#   JULIA_CUDA_USE_NVML = false
-#   JULIA_CUDA_USE_MKL = false
-#   JULIA_CUDA_USE_MKL_SHARP = false
-#   JULIA_CUDA_USE_SHARP = false
-#   JULIA_CUDA_USE_BLAS64 = true
-#   JULIA_CUDA_USE_MKL_BLAS64 = false
-#   JULIA_CUDA_USE_MKL_SHARP_BLAS64 = false
-#   JULIA_CUDA_USE_SHARP_BLAS64 = false
-#   JULIA_CUDA_USE_MKL_JULIA = false
-#   JULIA_CUDA_USE_MKL_SHARP_JULIA = false
-#   JULIA_CUDA_USE_SHARP_JULIA = false
-#   JULIA_CUDA_USE_MKL_JULIA_BLAS64 = false
-#   JULIA_CUDA_USE_MKL_SHARP_JULIA_BLAS64 = false
-#   JULIA_CUDA_USE_SHARP_JULIA_BLAS64 = false
-#   JULIA_CUDA_USE_MKL_JULIA_THREADING = false
-#   JULIA_CUDA_USE_MKL_SHARP_JULIA_THREADING = false
-#   JULIA_CUDA_USE_SHARP_JULIA_THREADING = false
-#   JULIA_CUDA_USE_MKL_JULIA_BLAS64_THREADING = false
-
-=======
-
-# CSR SPMV KernelAbstractions Kernel
-# Generated on 2020-05-15T15:27:14.375
-# KernelAbstractions.jl commit 5a5a8b5
-# CoPilot.jl commit 9b9d8c5
-# Julia Version 1.4.0
-# Commit 2e2303da46 (2020-04-24 05:33 UTC)
-# Platform Info:
-#   OS: Linux (x86_64-linux-gnu)
-#   CPU: Intel(R) Xeon(R) Gold 6148 CPU @ 2.40GHz
-#   WORD_SIZE: 64
-#   LIBM: libopenlibm
-#   LLVM: libLLVM-8.0.1 (ORCJIT, skylake-avx512)
-# Environment:
-#   JULIA_NUM_THREADS = 48
-#   JULIA_EDITO
-
-=======
-
-# CSR SPMV KernelAbstractions Kernel
-# Generated on 2021-03-29T19:18:17.000
-# Generated by SPMV.jl
-# Kernel compilation hash: 7b9c9e8f-1f6a-5d7f-bc5f-6e0a6f2d2e9a
+# CSR SPMV KernelsAbstractions implementation
 
 using KernelAbstractions
 using KernelAbstractions.Extras: @unroll
 
-#=
-    KernelAbstractions Kernel: spmv
-    Kernel compilation hash: 7b9c9e8f-1f6a-5d7f-bc5f-6e0a6f2d2e9a
-=#
-
-@kernel function spmv!(C, A, B)
-    I = @index(Global, Linear)
-    @inbounds C[I] = zero(eltype(C))
-    @unroll for K in A.rowptr[I]:(A.rowptr[I + 1] - 1)
-        @inbounds C[I] += A.nzval[K] * B[A.colval[K]]
-    end
+function spmv!(C, A, B)
+    kernel = spmv_kernel!(C, A, B)
+    event = kernel()
+    wait(event)
     return nothing
 end
 
-#=
-    KernelAbstractions Kernel: spmv
-    Kernel compilation hash: 7b9c9e8f-1f6a-5d7f-bc5f-6e0a6f2d2e9a
-=#
-
-@kernel function spmv!(C, A, B)
-    I = @index(Global, Linear)
-    @inbounds C[I] = zero(eltype(C))
-    @unroll for K in A.rowptr[I]:(A.rowptr[I + 1] - 1)
-        @inbounds C[I] += A.nzval[K] * B[A.colval[K]]
+function spmv_kernel!(C, A, B)
+    kernel! = @kernel function spmv_kernel!(C, A, B)
+        i = @index(Global)
+        row_start = A.row_pointers[i]
+        row_end = A.row_pointers[i+1]
+        @unroll for j in row_start:row_end
+            C[i] += A.values[j] * B[A.col_indices[j]]
+        end
     end
-    return nothing
+    return kernel!(C, A, B)
 end
 
-#=
-    KernelAbstractions Kernel: spmv
-    Kernel compilation hash: 7b9c9e8f-1f6a-5d7f-bc5f-6e0a6f2d2e9a
-=#
+function spmv_kernel!(C, A, B)
+    kernel! = @kernel function spmv_kernel!(C, A, B)
+        i = @index(Global)
+        row_start = A.row_pointers[i]
+        row_end = A.row_pointers[i+1]
+        @unroll for j in row_start:row_end
+            C[i] += A.values[j] * B[A.col_indices[j]]
+        end
+    end
+    return kernel!(C, A, B)
+end
 
-@kernel function spmv!(C, A, B)
-    I = @index(Global, Linear)
-    @inbounds C[I] = zero(eltype(C))
-    @unroll for K in A.rowptr[I]:(A.rowptr[I + 1] - 1)
-        @inbounds C[I] += A.nzval[K
+function spmv_kernel!(C, A, B)
+    kernel! = @kernel function spmv_kernel!(C, A, B)
+        i = @index(Global)
+        row_start = A.row_pointers[i]
+        row_end = A.row_pointers[i+1]
+        @unroll for j in row_start:row_end
+            C[i] += A.values[j] * B[A.col_indices[j]]
+        end
+    end
+    return kernel!(C, A, B)
+end
+
+function spmv_kernel!(C, A, B)
+    kernel! = @kernel function spmv_kernel!(C, A, B)
+        i = @index(Global)
+        row_start = A.row_pointers[i]
+        row_end = A.row_pointers[i+1]
+        @unroll for j in row_start:row_end
+            C[i] += A.values[j] * B[A.col_indices[j]]
+        end
+    end
+    return kernel!(C, A, B)
+end
+
+function spmv_kernel!(C, A, B)
+    kernel! = @kernel function spmv_kernel!(C, A, B)
 
 =======
 
-# CSR SPMV KernelAbstractions implementation
+# CSR SPMV KernelsAbstractions version
+using KernelAbstractions
+using CUDA
+using LinearAlgebra
+using SparseArrays
+using BenchmarkTools
+using Test
+
+const blocksize = 256
+const workgroupsize = 256
+const workgroupsize2 = workgroupsize^2
+
+# Kernel to compute the SPMV
+@kernel function spmv_kernel(A, x, y)
+    i = @index(Global, Linear)
+    y[i] = zero(eltype(y))
+    @inbounds for col in A.rowval[A.colptr[i]:(A.colptr[i+1]-1)]
+        y[i] += A.nzval[col] * x[A.rowval[col]]
+    end
+end
+
+# Kernel to compute the SPMV
+@kernel function spmv_kernel2(A, x, y)
+    i = @index(Global, Linear)
+    y[i] = zero(eltype(y))
+    @inbounds for col in A.rowval[A.colptr[i]:(A.colptr[i+1]-1)]
+        y[i] += A.nzval[col] * x[A.rowval[col]]
+    end
+end
+
+# Kernel to compute the SPMV
+@kernel function spmv_kernel3(A, x, y)
+    i = @index(Global, Linear)
+    y[i] = zero(eltype(y))
+    @inbounds for col in A.rowval[A.colptr[i]:(A.colptr[i+1]-1)]
+        y[i] += A.nzval[col] * x[A.rowval[col]]
+    end
+end
+
+# Kernel to compute the SPMV
+@kernel function spmv_kernel4(A, x, y)
+    i = @index(Global, Linear)
+    y[i] = zero(eltype(y))
+    @inbounds for col in A.rowval[A.colptr[i]:(A.colptr[i+1]-1)]
+        y[i] += A.nzval[col] * x[A.rowval[col]]
+    end
+end
+
+# Kernel to compute the SPMV
+@kernel function spmv_kernel5(A, x, y)
+    i = @index(Global, Linear)
+    y[i] = zero(eltype(y))
+    @inbounds for col in A.rowval[A.colptr[i]:(A.colptr[i+1]-1)]
+        y[i] += A.nzval[col] * x[A.rowval[col]]
+    end
+end
+
+# Kernel to compute the SPMV
+
+=======
+
+# CSR SPMV KernelsAbstractions and KernelAbstractions
+using KernelAbstractions
+using CUDA
+
+# CUDA Kernel
+@kernel function cuda_spmv_kernel(A, x, y)
+    i = @index(Global)
+    y[i] = zero(eltype(y))
+    for k in A.rowPtr[i]:(A.rowPtr[i+1]-1)
+        y[i] += A.nzval[k] * x[A.colVal[k]]
+    end
+end
+
+# CPU Kernel
+@kernel function cpu_spmv_kernel(A, x, y)
+    i = @index(Global)
+    y[i] = zero(eltype(y))
+    for k in A.rowPtr[i]:(A.rowPtr[i+1]-1)
+        y[i] += A.nzval[k] * x[A.colVal[k]]
+    end
+end
+
+# SPMV
+function spmv(A, x)
+    y = zeros(eltype(A), size(A, 1))
+    if isa(A, SparseMatrixCSC{Float32,Int32})
+        kernel = cpu_spmv_kernel
+    elseif isa(A, CuSparseMatrixCSC{Float32,Int32})
+        kernel = cuda_spmv_kernel
+    else
+        error("Unsupported matrix type")
+    end
+    event = kernel(A, x, y; ndrange=size(A, 1))
+    wait(event)
+    return y
+end
+
+# Path: SPMV/SPMV.jl
+# CSR SPMV KernelsAbstractions and KernelAbstractions
+using KernelAbstractions
+using CUDA
+
+# CUDA Kernel
+@kernel function cuda_spmv_kernel(A, x, y)
+    i = @index(Global)
+    y[i] = zero(eltype(y))
+    for k in A.rowPtr[i]:(A.rowPtr[i+1]-1)
+        y[i] += A.nzval[k] * x[A.colVal[k]]
+    end
+end
+
+# CPU Kernel
+@kernel function cpu_spmv_kernel(A, x, y)
+    i = @index(Global)
+    y[i] = zero(eltype(y))
+    for k in A.rowPtr[i]:(A.rowPtr[i+1]-1)
+        y[i] += A.nzval[k] * x[A.colVal[k]]
+    end
+end
+
+# SPMV
+function spmv(A, x)
+    y = zeros(eltype(A), size(A, 1))
+    if isa(A,
+
+=======
+
+# CSR SPMV KernelsAbstractions implementation
+using KernelsAbstractions
+using KernelsAbstractions: @kernel, @index, @launch, @workgroup, @localmem
+
+using LinearAlgebra
+using SparseArrays
+
+# CSR Matrix
+struct CSRMatrix{T} <: AbstractSparseMatrix{T}
+    m::Int
+    n::Int
+    colptr::Vector{Int}
+    rowval::Vector{Int}
+    nzval::Vector{T}
+end
+
+# CSR Matrix constructor
+function CSRMatrix(A::AbstractSparseMatrix{T}) where T
+    m, n = size(A)
+    colptr = Vector{Int}(undef, n + 1)
+    rowval = Vector{Int}(undef, nnz(A))
+    nzval = Vector{T}(undef, nnz(A))
+
+    # Convert to CSR
+    colptr[1] = 1
+    for j = 1:n
+        colptr[j + 1] = colptr[j]
+        for i in nzrange(A, j)
+            rowval[colptr[j + 1]] = i
+            nzval[colptr[j + 1]] = A[i, j]
+            colptr[j + 1] += 1
+        end
+    end
+
+    CSRMatrix(m, n, colptr, rowval, nzval)
+end
+
+# CSR SPMV Kernel
+@kernel function csr_spmv!(y::AbstractVector{T}, A::CSRMatrix{T}, x::AbstractVector{T}) where T
+    i = @index(Global, Linear)
+    j = @index(Local, Linear)
+    @workgroup for k in @localmem T(0):T(1):T(A.m-1)
+        if i == k
+            y[i] = zero(T)
+            for l in A.colptr[j]:A.colptr[j + 1] - 1
+                y[i] += A.nzval[l] * x[A.rowval[l]]
+            end
+        end
+    end
+end
+
+# CSR SPMV
+function csr_spmv(y::AbstractVector{T}, A::CSRMatrix{T}, x::AbstractVector{T}) where T
+    @launch threads=A.m blocks=A.n csr_spmv!(y, A, x)
+end
+
+# Example
+A = sprand(1000, 1000, 0.1)
+Acsr = CSRMatrix(A)
+x = rand(1000)
+y
+
+=======
+
+# CSR SPMV KernelsAbstractions version
+# Authors: @vchuravy @SimonDanisch
+
+using KernelAbstractions
+using KernelAbstractions.Extras: @unroll
+
+# This is the kernel that we want to run on the GPU
+# It is a simple kernel that does a sparse matrix-vector multiplication
+# and stores the result in a vector.
+# The kernel is parameterized by the data type of the input and output vectors
+# and the data type of the matrix values.
+# The kernel also takes the matrix in CSR format as inputs.
+# The kernel is executed on the GPU using the KernelAbstractions package.
+function spmv_kernel!(C, A, B, ::Val{N}) where N
+    i = @index(Global)
+    row_start = A.rowptr[i]
+    row_end = A.rowptr[i+1]
+    acc = zero(eltype(C))
+    @unroll(N) for j = row_start:row_end
+        acc += A.nzval[j] * B[A.colval[j]]
+    end
+    C[i] = acc
+end
+
+# This is the kernel that we want to run on the GPU
+# It is a simple kernel that does a sparse matrix-vector multiplication
+# and stores the result in a vector.
+# The kernel is parameterized by the data type of the input and output vectors
+# and the data type of the matrix values.
+# The kernel also takes the matrix in CSR format as inputs.
+# The kernel is executed on the GPU using the KernelAbstractions package.
+function spmv_kernel!(C, A, B, ::Val{N}) where N
+    i = @index(Global)
+    row_start = A.rowptr[i]
+    row_end = A.rowptr[i+1]
+    acc = zero(eltype(C))
+    @unroll(N) for j = row_start:row_end
+        acc += A.nzval[j] * B[A.colval[j]]
+    end
+    C[i] = acc
+end
+
+# This is the kernel that we want to run on the GPU
+# It is a simple kernel that does a sparse matrix-vector multiplication
+# and stores the result in a vector.
+# The kernel is parameterized by the data type of the input and output vectors
+# and the data type of the matrix values.
+# The kernel also takes the matrix in CSR format as inputs.
+# The kernel is executed on the GPU using the KernelAbstractions package.
+function
+
+=======
+
+# CSR SPMV KernelsAbstractions version
+# 2021-09-29
+using KernelsAbstractions: @kernel, @index, @unroll
+using KernelsAbstractions: @launch, @cuda, @cpu_threads, @cpu_serial
+
+@kernel function spmv_csr_kernel(A, x, y)
+  I = @index(Global, Linear)
+  if I ≤ size(A, 1)
+    @unroll for J in nzrange(A, I)
+      y[I] += A[I, J] * x[J]
+    end
+  end
+end
+
+function spmv_csr(A, x)
+  y = zeros(size(A, 1))
+  @launch spmv_csr_kernel(A, x, y)
+  return y
+end
+
+# Path: SPMV/SPMV.jl
+# CSR SPMV KernelsAbstractions version
+# 2021-09-29
+using KernelsAbstractions: @kernel, @index, @unroll
+using KernelsAbstractions: @launch, @cuda, @cpu_threads, @cpu_serial
+
+@kernel function spmv_csr_kernel(A, x, y)
+  I = @index(Global, Linear)
+  if I ≤ size(A, 1)
+    @unroll for J in nzrange(A, I)
+      y[I] += A[I, J] * x[J]
+    end
+  end
+end
+
+function spmv_csr(A, x)
+  y = zeros(size(A, 1))
+  @launch spmv_csr_kernel(A, x, y)
+  return y
+end
+
+# Path: SPMV/SPMV.jl
+# CSR SPMV KernelsAbstractions version
+# 2021-09-29
+using KernelsAbstractions: @kernel, @index, @unroll
+using KernelsAbstractions: @launch, @cuda, @cpu_threads, @cpu_serial
+
+@kernel function spmv_csr_kernel(A, x, y)
+  I = @index(Global, Linear)
+  if I ≤ size(A, 1)
+    @unroll for J in nzrange(A, I)
+      y[I] += A[I, J] * x[J]
+    end
+  end
+end
+
+function spmv_csr(A, x)
+  y = zeros(size(A, 1))
+  @launch spmv_csr_kernel(A, x, y)
+  return
+
+=======
+
+# CSR SPMV KernelsAbstractions implementation
+# SPMV.jl
+# ======
+#
+# This file contains the implementation of the CSR SPMV kernels using
+# KernelAbstractions.jl.
+#
+# The kernels are implemented as functions, with a `!` suffix denoting
+# the in-place version of the kernel.
+#
+# The kernels are parameterized by the following types:
+# - `T`: the type of the matrix values
+# - `I`: the type of the matrix column indices
+# - `IT`: the type of the vector indices
+# - `V`: the type of the vector values
+# - `C`: the type of the vector values
+#
+# The kernels are parameterized by the following arguments:
+# - `A`: the CSR matrix
+# - `x`: the vector
+# - `y`: the vector
+# - `α`: the scalar
+# - `β`: the scalar
+
+using KernelAbstractions
+using KernelAbstractions.Extras: @unroll
+
+# KernelAbstractions.jl does not support `@unroll` yet, so we use
+# KernelAbstractions.Extras.@unroll instead.
+@unroll function spmv!(A, x, y, α, β)
+    @inbounds for j in 1:size(A, 2)
+        y[j] = β * y[j]
+        for k in A.colptr[j]:(A.colptr[j + 1] - 1)
+            y[j] += α * A.nzval[k] * x[A.rowval[k]]
+        end
+    end
+    return nothing
+end
+
+# KernelAbstractions.jl does not support `@unroll` yet, so we use
+# KernelAbstractions.Extras.@unroll instead.
+@unroll function spmv!(A, x, y)
+    @inbounds for j in 1:size(A, 2)
+        for k in A.colptr[j]:(A.colptr[j + 1] - 1)
+            y[j] += A.nzval[k] * x[A.rowval[k]]
+        end
+    end
+    return nothing
+end
+
+# KernelAbstractions.jl does not support `@unroll` yet, so we use
+# KernelAbstractions.Extras.@unroll instead.
+@unroll function spmv!(A, x, y, α)
+    @inbounds for j in 1:size(A, 2
+
+=======
+
+# CSR SPMV KernelsAbstractions (Kernels.jl)
+# Created by: S. K. Saha
+# Date: 15/05/2021
+# License: MIT
+# ========================================================
+
+# ========================================================
+# 1. CSR SPMV - 1D Kernel
+# ========================================================
+
+using Kernels, LinearAlgebra, SparseArrays, BenchmarkTools
+
+# CSR SPMV 1D Kernel
+function csr_spmv_1d_kernel!(y, A, x)
+    @inbounds for i in 1:length(y)
+        for j in A.rowptr[i]:(A.rowptr[i+1]-1)
+            y[i] += A.nzval[j] * x[A.colval[j]]
+        end
+    end
+end
+
+# CSR SPMV 1D Kernel - Kernels.jl
+@kernel function csr_spmv_1d_kernel_k!(y, A, x)
+    i = @index(Global)
+    for j in A.rowptr[i]:(A.rowptr[i+1]-1)
+        y[i] += A.nzval[j] * x[A.colval[j]]
+    end
+end
+
+# ========================================================
+# 2. CSR SPMV - 2D Kernel
+# ========================================================
+
+# CSR SPMV 2D Kernel
+function csr_spmv_2d_kernel!(y, A, x)
+    @inbounds for i in 1:length(y)
+        for j in A.rowptr[i]:(A.rowptr[i+1]-1)
+            y[i] += A.nzval[j] * x[A.colval[j]]
+        end
+    end
+end
+
+# CSR SPMV 2D Kernel - Kernels.jl
+@kernel function csr_spmv_2d_kernel_k!(y, A, x)
+    i = @index(Global, Linear)
+    j = @index(Global, Linear)
+    if j ∈ A.rowptr[i]:(A.rowptr[i+1]-1)
+        y[i] += A.nzval[j] * x[A.colval[j]]
+    end
+end
+
+# ========================================================
+# 3. CSR SPMV - 3D Kernel
+# ========================================================
+
+# CSR SPMV 3D Kernel
+function csr_spmv_3d_kernel!(y, A, x)
+    @inbounds for i in 1:length(y)
+        for j in A.rowptr[i]
 

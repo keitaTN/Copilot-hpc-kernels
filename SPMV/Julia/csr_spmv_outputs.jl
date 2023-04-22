@@ -974,500 +974,195 @@ function spmv(A::SparseMatrixCSC{Tv,Ti}, x::Vector{Tv}) where {Tv<:AbstractFloat
 
 ### End of Output
 
-# Prompt: CSR SPMV KernelsAbstractions
+# Prompt: CSR SPMV KernelAbstractions
 ### Beginning of Output
 
-Synthesizing 8/10 solutions
+Synthesizing 9/10 solutions (Duplicates hidden)
 
 =======
 
-# CSR SPMV KernelsAbstractions implementation
+# CSR SPMV KernelAbstractions implementation
+function spmv_csr_kernel!(y::Vector{T}, A::CSR{T}, x::Vector{T}) where T
+    @assert length(y) == size(A,1)
+    @assert length(x) == size(A,2)
+    @assert size(A,1) == size(A,2)
 
-using KernelAbstractions
-using KernelAbstractions.Extras: @unroll
-
-function spmv!(C, A, B)
-    kernel = spmv_kernel!(C, A, B)
-    event = kernel()
-    wait(event)
-    return nothing
-end
-
-function spmv_kernel!(C, A, B)
-    kernel! = @kernel function spmv_kernel!(C, A, B)
+    # KernelAbstractions kernel
+    function kernel!(y, A, x)
         i = @index(Global)
-        row_start = A.row_pointers[i]
-        row_end = A.row_pointers[i+1]
-        @unroll for j in row_start:row_end
-            C[i] += A.values[j] * B[A.col_indices[j]]
+        @inbounds y[i] = zero(T)
+        for j in A.rowptr[i]:A.rowptr[i+1]-1
+            @inbounds y[i] += A.nzval[j] * x[A.colval[j]]
         end
     end
-    return kernel!(C, A, B)
-end
 
-function spmv_kernel!(C, A, B)
-    kernel! = @kernel function spmv_kernel!(C, A, B)
-        i = @index(Global)
-        row_start = A.row_pointers[i]
-        row_end = A.row_pointers[i+1]
-        @unroll for j in row_start:row_end
-            C[i] += A.values[j] * B[A.col_indices[j]]
-        end
-    end
-    return kernel!(C, A, B)
-end
-
-function spmv_kernel!(C, A, B)
-    kernel! = @kernel function spmv_kernel!(C, A, B)
-        i = @index(Global)
-        row_start = A.row_pointers[i]
-        row_end = A.row_pointers[i+1]
-        @unroll for j in row_start:row_end
-            C[i] += A.values[j] * B[A.col_indices[j]]
-        end
-    end
-    return kernel!(C, A, B)
-end
-
-function spmv_kernel!(C, A, B)
-    kernel! = @kernel function spmv_kernel!(C, A, B)
-        i = @index(Global)
-        row_start = A.row_pointers[i]
-        row_end = A.row_pointers[i+1]
-        @unroll for j in row_start:row_end
-            C[i] += A.values[j] * B[A.col_indices[j]]
-        end
-    end
-    return kernel!(C, A, B)
-end
-
-function spmv_kernel!(C, A, B)
-    kernel! = @kernel function spmv_kernel!(C, A, B)
-
-=======
-
-# CSR SPMV KernelsAbstractions version
-using KernelAbstractions
-using CUDA
-using LinearAlgebra
-using SparseArrays
-using BenchmarkTools
-using Test
-
-const blocksize = 256
-const workgroupsize = 256
-const workgroupsize2 = workgroupsize^2
-
-# Kernel to compute the SPMV
-@kernel function spmv_kernel(A, x, y)
-    i = @index(Global, Linear)
-    y[i] = zero(eltype(y))
-    @inbounds for col in A.rowval[A.colptr[i]:(A.colptr[i+1]-1)]
-        y[i] += A.nzval[col] * x[A.rowval[col]]
-    end
-end
-
-# Kernel to compute the SPMV
-@kernel function spmv_kernel2(A, x, y)
-    i = @index(Global, Linear)
-    y[i] = zero(eltype(y))
-    @inbounds for col in A.rowval[A.colptr[i]:(A.colptr[i+1]-1)]
-        y[i] += A.nzval[col] * x[A.rowval[col]]
-    end
-end
-
-# Kernel to compute the SPMV
-@kernel function spmv_kernel3(A, x, y)
-    i = @index(Global, Linear)
-    y[i] = zero(eltype(y))
-    @inbounds for col in A.rowval[A.colptr[i]:(A.colptr[i+1]-1)]
-        y[i] += A.nzval[col] * x[A.rowval[col]]
-    end
-end
-
-# Kernel to compute the SPMV
-@kernel function spmv_kernel4(A, x, y)
-    i = @index(Global, Linear)
-    y[i] = zero(eltype(y))
-    @inbounds for col in A.rowval[A.colptr[i]:(A.colptr[i+1]-1)]
-        y[i] += A.nzval[col] * x[A.rowval[col]]
-    end
-end
-
-# Kernel to compute the SPMV
-@kernel function spmv_kernel5(A, x, y)
-    i = @index(Global, Linear)
-    y[i] = zero(eltype(y))
-    @inbounds for col in A.rowval[A.colptr[i]:(A.colptr[i+1]-1)]
-        y[i] += A.nzval[col] * x[A.rowval[col]]
-    end
-end
-
-# Kernel to compute the SPMV
-
-=======
-
-# CSR SPMV KernelsAbstractions and KernelAbstractions
-using KernelAbstractions
-using CUDA
-
-# CUDA Kernel
-@kernel function cuda_spmv_kernel(A, x, y)
-    i = @index(Global)
-    y[i] = zero(eltype(y))
-    for k in A.rowPtr[i]:(A.rowPtr[i+1]-1)
-        y[i] += A.nzval[k] * x[A.colVal[k]]
-    end
-end
-
-# CPU Kernel
-@kernel function cpu_spmv_kernel(A, x, y)
-    i = @index(Global)
-    y[i] = zero(eltype(y))
-    for k in A.rowPtr[i]:(A.rowPtr[i+1]-1)
-        y[i] += A.nzval[k] * x[A.colVal[k]]
-    end
-end
-
-# SPMV
-function spmv(A, x)
-    y = zeros(eltype(A), size(A, 1))
-    if isa(A, SparseMatrixCSC{Float32,Int32})
-        kernel = cpu_spmv_kernel
-    elseif isa(A, CuSparseMatrixCSC{Float32,Int32})
-        kernel = cuda_spmv_kernel
-    else
-        error("Unsupported matrix type")
-    end
-    event = kernel(A, x, y; ndrange=size(A, 1))
-    wait(event)
-    return y
+    # KernelAbstractions launch
+    kernel!(y, A, x; ndrange=size(A,1))
 end
 
 # Path: SPMV/SPMV.jl
-# CSR SPMV KernelsAbstractions and KernelAbstractions
-using KernelAbstractions
-using CUDA
+# CSR SPMV KernelAbstractions implementation
+function spmv_csr_kernel!(y::Vector{T}, A::CSR{T}, x::Vector{T}) where T
+    @assert length(y) == size(A,1)
+    @assert length(x) == size(A,2)
+    @assert size(A,1) == size(A,2)
 
-# CUDA Kernel
-@kernel function cuda_spmv_kernel(A, x, y)
-    i = @index(Global)
-    y[i] = zero(eltype(y))
-    for k in A.rowPtr[i]:(A.rowPtr[i+1]-1)
-        y[i] += A.nzval[k] * x[A.colVal[k]]
-    end
-end
-
-# CPU Kernel
-@kernel function cpu_spmv_kernel(A, x, y)
-    i = @index(Global)
-    y[i] = zero(eltype(y))
-    for k in A.rowPtr[i]:(A.rowPtr[i+1]-1)
-        y[i] += A.nzval[k] * x[A.colVal[k]]
-    end
-end
-
-# SPMV
-function spmv(A, x)
-    y = zeros(eltype(A), size(A, 1))
-    if isa(A,
-
-=======
-
-# CSR SPMV KernelsAbstractions implementation
-using KernelsAbstractions
-using KernelsAbstractions: @kernel, @index, @launch, @workgroup, @localmem
-
-using LinearAlgebra
-using SparseArrays
-
-# CSR Matrix
-struct CSRMatrix{T} <: AbstractSparseMatrix{T}
-    m::Int
-    n::Int
-    colptr::Vector{Int}
-    rowval::Vector{Int}
-    nzval::Vector{T}
-end
-
-# CSR Matrix constructor
-function CSRMatrix(A::AbstractSparseMatrix{T}) where T
-    m, n = size(A)
-    colptr = Vector{Int}(undef, n + 1)
-    rowval = Vector{Int}(undef, nnz(A))
-    nzval = Vector{T}(undef, nnz(A))
-
-    # Convert to CSR
-    colptr[1] = 1
-    for j = 1:n
-        colptr[j + 1] = colptr[j]
-        for i in nzrange(A, j)
-            rowval[colptr[j + 1]] = i
-            nzval[colptr[j + 1]] = A[i, j]
-            colptr[j + 1] += 1
+    # KernelAbstractions kernel
+    function kernel!(y, A, x)
+        i = @index(Global)
+        @inbounds y[i] = zero(T)
+        for j in A.rowptr[i]:A.rowptr[i+1]-1
+            @inbounds y[i] += A.nzval[j] * x[A.colval[j]]
         end
     end
 
-    CSRMatrix(m, n, colptr, rowval, nzval)
-end
-
-# CSR SPMV Kernel
-@kernel function csr_spmv!(y::AbstractVector{T}, A::CSRMatrix{T}, x::AbstractVector{T}) where T
-    i = @index(Global, Linear)
-    j = @index(Local, Linear)
-    @workgroup for k in @localmem T(0):T(1):T(A.m-1)
-        if i == k
-            y[i] = zero(T)
-            for l in A.colptr[j]:A.colptr[j + 1] - 1
-                y[i] += A.nzval[l] * x[A.rowval[l]]
-            end
-        end
-    end
-end
-
-# CSR SPMV
-function csr_spmv(y::AbstractVector{T}, A::CSRMatrix{T}, x::AbstractVector{T}) where T
-    @launch threads=A.m blocks=A.n csr_spmv!(y, A, x)
-end
-
-# Example
-A = sprand(1000, 1000, 0.1)
-Acsr = CSRMatrix(A)
-x = rand(1000)
-y
-
-=======
-
-# CSR SPMV KernelsAbstractions version
-# Authors: @vchuravy @SimonDanisch
-
-using KernelAbstractions
-using KernelAbstractions.Extras: @unroll
-
-# This is the kernel that we want to run on the GPU
-# It is a simple kernel that does a sparse matrix-vector multiplication
-# and stores the result in a vector.
-# The kernel is parameterized by the data type of the input and output vectors
-# and the data type of the matrix values.
-# The kernel also takes the matrix in CSR format as inputs.
-# The kernel is executed on the GPU using the KernelAbstractions package.
-function spmv_kernel!(C, A, B, ::Val{N}) where N
-    i = @index(Global)
-    row_start = A.rowptr[i]
-    row_end = A.rowptr[i+1]
-    acc = zero(eltype(C))
-    @unroll(N) for j = row_start:row_end
-        acc += A.nzval[j] * B[A.colval[j]]
-    end
-    C[i] = acc
-end
-
-# This is the kernel that we want to run on the GPU
-# It is a simple kernel that does a sparse matrix-vector multiplication
-# and stores the result in a vector.
-# The kernel is parameterized by the data type of the input and output vectors
-# and the data type of the matrix values.
-# The kernel also takes the matrix in CSR format as inputs.
-# The kernel is executed on the GPU using the KernelAbstractions package.
-function spmv_kernel!(C, A, B, ::Val{N}) where N
-    i = @index(Global)
-    row_start = A.rowptr[i]
-    row_end = A.rowptr[i+1]
-    acc = zero(eltype(C))
-    @unroll(N) for j = row_start:row_end
-        acc += A.nzval[j] * B[A.colval[j]]
-    end
-    C[i] = acc
-end
-
-# This is the kernel that we want to run on the GPU
-# It is a simple kernel that does a sparse matrix-vector multiplication
-# and stores the result in a vector.
-# The kernel is parameterized by the data type of the input and output vectors
-# and the data type of the matrix values.
-# The kernel also takes the matrix in CSR format as inputs.
-# The kernel is executed on the GPU using the KernelAbstractions package.
-function
-
-=======
-
-# CSR SPMV KernelsAbstractions version
-# 2021-09-29
-using KernelsAbstractions: @kernel, @index, @unroll
-using KernelsAbstractions: @launch, @cuda, @cpu_threads, @cpu_serial
-
-@kernel function spmv_csr_kernel(A, x, y)
-  I = @index(Global, Linear)
-  if I ≤ size(A, 1)
-    @unroll for J in nzrange(A, I)
-      y[I] += A[I, J] * x[J]
-    end
-  end
-end
-
-function spmv_csr(A, x)
-  y = zeros(size(A, 1))
-  @launch spmv_csr_kernel(A, x, y)
-  return y
+    # KernelAbstractions launch
+    kernel!(y, A, x; ndrange=size(A,1))
 end
 
 # Path: SPMV/SPMV.jl
-# CSR SPMV KernelsAbstractions version
-# 2021-09-29
-using KernelsAbstractions: @kernel, @index, @unroll
-using KernelsAbstractions: @launch, @cuda, @cpu_threads, @cpu_serial
+# CSR SPMV KernelAbstractions implementation
+function spmv_csr_kernel!(y::Vector{T}, A::CSR{T}, x::Vector{T}) where T
+    @assert length(y) == size(A,1)
+    @assert length(x) == size(A,2)
+    @assert size(A,1) == size(A,2)
 
-@kernel function spmv_csr_kernel(A, x, y)
-  I = @index(Global, Linear)
-  if I ≤ size(A, 1)
-    @unroll for J in nzrange(A, I)
-      y[I] += A[I, J] * x[J]
+    # KernelAbstractions kernel
+    function kernel!(y, A, x)
+        i = @index(Global)
+        @inbounds y[i] = zero(T)
+        for j in A.rowptr[i]:A.rowptr[i+1]-1
+            @inbounds
+
+=======
+
+# CSR SPMV KernelAbstractions kernel
+function spmv_kernel(du, A, dx)
+    i = @index(Global)
+    if i <= size(A, 1)
+        du[i] = zero(eltype(du))
+        for j in nzrange(A, i)
+            du[i] += A.nzval[j] * dx[A.rowval[j]]
+        end
     end
-  end
 end
+# Path: SPMV/SPMV.jl
+# SPMV KernelAbstractions kernel
+function spmv_kernel(du, A, dx)
+    i = @index(Global)
+    if i <= size(A, 1)
+        du[i] = zero(eltype(du))
+        for j in nzrange(A, i)
+            du[i] += A.nzval[j] * dx[A.rowval[j]]
+        end
+    end
+end
+# Path: SPMV/SPMV.jl
+# SPMV KernelAbstractions kernel
+function spmv_kernel(du, A, dx)
+    i = @index(Global)
+    if i <= size(A, 1)
+        du[i] = zero(eltype(du))
+        for j in nzrange(A, i)
+            du[i] += A.nzval[j] * dx[A.rowval[j]]
+        end
+    end
+end
+# Path: SPMV/SPMV.jl
+# SPMV KernelAbstractions kernel
+function spmv_kernel(du, A, dx)
+    i = @index(Global)
+    if i <= size(A, 1)
+        du[i] = zero(eltype(du))
+        for j in nzrange(A, i)
+            du[i] += A.nzval[j] * dx[A.rowval[j]]
+        end
+    end
+end
+# Path: SPMV/SPMV.jl
+# SPMV KernelAbstractions kernel
+function spmv_kernel(du, A, dx)
+    i = @index(Global)
+    if i <= size(A, 1)
+        du[i] = zero(eltype(du))
+        for j in nzrange(A, i)
+            du[i] += A.nzval[j] * dx[A.rowval[j]]
+        end
+    end
+end
+# Path: SPMV/SPMV.jl
+# SPMV KernelAbstractions kernel
+function spmv_kernel(du, A, dx)
+    i = @index(Global)
+    if i <= size
 
-function spmv_csr(A, x)
-  y = zeros(size(A, 1))
-  @launch spmv_csr_kernel(A, x, y)
-  return y
+=======
+
+# CSR SPMV KernelAbstractions implementation
+# See
+
+=======
+
+# CSR SPMV KernelAbstractions implementation
+#
+
+=======
+
+# CSR SPMV KernelAbstractions kernel for a single row.
+# This kernel is called by the SPMV kernel for each row.
+# It is called once for each nonzero in the row.
+# It is assumed that the row has at least one nonzero.
+function csr_spmv_kernel!(A, x, y, row, col, val)
+    y[row] += x[col] * val
 end
 
 # Path: SPMV/SPMV.jl
-# CSR SPMV KernelsAbstractions version
-# 2021-09-29
-using KernelsAbstractions: @kernel, @index, @unroll
-using KernelsAbstractions: @launch, @cuda, @cpu_threads, @cpu_serial
-
-@kernel function spmv_csr_kernel(A, x, y)
-  I = @index(Global, Linear)
-  if I ≤ size(A, 1)
-    @unroll for J in nzrange(A, I)
-      y[I] += A[I, J] * x[J]
+# SPMV KernelAbstractions kernel for a single row.
+# This kernel is called by the SPMV kernel for each row.
+# It is called once for each nonzero in the row.
+# It is assumed that the row has at least one nonzero.
+function spmv_kernel!(A, x, y, row)
+    row_start = A.rowptr[row]
+    row_end = A.rowptr[row + 1]
+    for i in row_start:row_end
+        csr_spmv_kernel!(A, x, y, row, A.colval[i], A.nzval[i])
     end
-  end
 end
 
-function spmv_csr(A, x)
-  y = zeros(size(A, 1))
-  @launch spmv_csr_kernel(A, x, y)
-  return
+# Path: SPMV/SPMV.jl
+# SPMV KernelAbstractions kernel for a single row.
+# This kernel is called by the SPMV kernel for each row.
+# It is called once for each nonzero in the row.
+# It is assumed that the row has at least one nonzero.
+function spmv_kernel!(A, x, y, row)
+    row_start = A.rowptr[row]
+    row_end = A.rowptr[row + 1]
+    for i in row_start:row_end
+        csr_spmv_kernel!(A, x, y, row, A.colval[i], A.nzval[i])
+    end
+end
+
+# Path: SPMV/SPMV.jl
+# SPMV KernelAbstractions kernel for the whole matrix.
+# This kernel is called by the SPMV kernel for each row.
+# It is called once for each nonzero in the row.
+# It is assumed that the row has at least one nonzero.
+function spmv_kernel!(A, x, y)
+    for row in 1:size(A, 1)
+        spmv_kernel!(A, x, y, row)
+    end
+end
+
+# Path: SPMV/SPMV.jl
+# SPMV KernelAbstractions kernel for the whole matrix.
+# This kernel is called by the SPMV kernel for each
 
 =======
 
-# CSR SPMV KernelsAbstractions implementation
-# SPMV.jl
-# ======
-#
-# This file contains the implementation of the CSR SPMV kernels using
-# KernelAbstractions.jl.
-#
-# The kernels are implemented as functions, with a `!` suffix denoting
-# the in-place version of the kernel.
-#
-# The kernels are parameterized by the following types:
-# - `T`: the type of the matrix values
-# - `I`: the type of the matrix column indices
-# - `IT`: the type of the vector indices
-# - `V`: the type of the vector values
-# - `C`: the type of the vector values
-#
-# The kernels are parameterized by the following arguments:
-# - `A`: the CSR matrix
-# - `x`: the vector
-# - `y`: the vector
-# - `α`: the scalar
-# - `β`: the scalar
-
-using KernelAbstractions
-using KernelAbstractions.Extras: @unroll
-
-# KernelAbstractions.jl does not support `@unroll` yet, so we use
-# KernelAbstractions.Extras.@unroll instead.
-@unroll function spmv!(A, x, y, α, β)
-    @inbounds for j in 1:size(A, 2)
-        y[j] = β * y[j]
-        for k in A.colptr[j]:(A.colptr[j + 1] - 1)
-            y[j] += α * A.nzval[k] * x[A.rowval[k]]
-        end
-    end
-    return nothing
-end
-
-# KernelAbstractions.jl does not support `@unroll` yet, so we use
-# KernelAbstractions.Extras.@unroll instead.
-@unroll function spmv!(A, x, y)
-    @inbounds for j in 1:size(A, 2)
-        for k in A.colptr[j]:(A.colptr[j + 1] - 1)
-            y[j] += A.nzval[k] * x[A.rowval[k]]
-        end
-    end
-    return nothing
-end
-
-# KernelAbstractions.jl does not support `@unroll` yet, so we use
-# KernelAbstractions.Extras.@unroll instead.
-@unroll function spmv!(A, x, y, α)
-    @inbounds for j in 1:size(A, 2
+# CSR SPMV KernelAbstractions implementation
 
 =======
 
-# CSR SPMV KernelsAbstractions (Kernels.jl)
-# Created by: S. K. Saha
-# Date: 15/05/2021
-# License: MIT
-# ========================================================
-
-# ========================================================
-# 1. CSR SPMV - 1D Kernel
-# ========================================================
-
-using Kernels, LinearAlgebra, SparseArrays, BenchmarkTools
-
-# CSR SPMV 1D Kernel
-function csr_spmv_1d_kernel!(y, A, x)
-    @inbounds for i in 1:length(y)
-        for j in A.rowptr[i]:(A.rowptr[i+1]-1)
-            y[i] += A.nzval[j] * x[A.colval[j]]
-        end
-    end
-end
-
-# CSR SPMV 1D Kernel - Kernels.jl
-@kernel function csr_spmv_1d_kernel_k!(y, A, x)
-    i = @index(Global)
-    for j in A.rowptr[i]:(A.rowptr[i+1]-1)
-        y[i] += A.nzval[j] * x[A.colval[j]]
-    end
-end
-
-# ========================================================
-# 2. CSR SPMV - 2D Kernel
-# ========================================================
-
-# CSR SPMV 2D Kernel
-function csr_spmv_2d_kernel!(y, A, x)
-    @inbounds for i in 1:length(y)
-        for j in A.rowptr[i]:(A.rowptr[i+1]-1)
-            y[i] += A.nzval[j] * x[A.colval[j]]
-        end
-    end
-end
-
-# CSR SPMV 2D Kernel - Kernels.jl
-@kernel function csr_spmv_2d_kernel_k!(y, A, x)
-    i = @index(Global, Linear)
-    j = @index(Global, Linear)
-    if j ∈ A.rowptr[i]:(A.rowptr[i+1]-1)
-        y[i] += A.nzval[j] * x[A.colval[j]]
-    end
-end
-
-# ========================================================
-# 3. CSR SPMV - 3D Kernel
-# ========================================================
-
-# CSR SPMV 3D Kernel
-function csr_spmv_3d_kernel!(y, A, x)
-    @inbounds for i in 1:length(y)
-        for j in A.rowptr[i]
+# CSR SPMV KernelAbstractions implementation
+# See:
 
